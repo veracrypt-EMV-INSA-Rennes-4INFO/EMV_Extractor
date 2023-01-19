@@ -5,8 +5,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-
-
 struct TLVNode{
     uint16_t Tag;				/*	T 	*/
     uint16_t Length;			/*	L 	*/
