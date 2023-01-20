@@ -8,17 +8,18 @@ int main(int argc, char *argv[])
 
     cout<< "GetReaders\n";
     cout<< "Number of connected readers: "<< ex.GetReaders() << endl;
-    int reader_nb = 0; // it's hardcoded for now but it should be a parameter with veracrypt
-    cout<<"GettingPAN\n";
 
+
+    int reader_nb = 0; // it's hardcoded for now but it should be a parameter with Veracrypt
+    cout<<"GettingPAN\n";
     try{
         string pan=ex.GettingPAN(reader_nb);
         cout << pan << endl;
     }catch(const ICCExtractionException &ex){
         cout <<"Error when getting Data: "<<ex.ErrorMessage();
     }
-    cout<<"GettingAllCerts\n";
 
+    cout<<"GettingAllCerts\n";
     try{
         vector<byte> res=ex.GettingAllCerts(reader_nb);
         for (auto val : res) printf("%02X", val);

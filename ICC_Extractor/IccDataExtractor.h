@@ -12,6 +12,7 @@
 #include <string.h>
 #include <vector>
 #include <iomanip>
+#include <memory>
 
 #include "TLVParser.h"
 
@@ -48,7 +49,7 @@ private:
 
     SCARDHANDLE hCard;          /* A handle that identifies the connection to the smart card in the designated reader*/
 
-    char ** readers;            /* Card reader list */
+    char ** readers;  /* Card reader list */
 
     int nbReaders;              /* Number of connected (available) readers */
 
@@ -60,20 +61,11 @@ private:
                                    * SCARD_PROTOCOL_T1: An asynchronous, block-oriented half-duplex transmission protocol.*/
 
 
-    /* Cleaning function in case of error*/
-    int ErrorClean();
-
-    /* Printing PCSC error message*/
-    void PCSC_ERROR(LONG rv, std::string text);
-
     /* Establishing the resource manager context (the scope) within which database operations are performed.
     * The module of the smart card subsystem that manages access to multiple readers and smart cards. The
     * resource manager identifies and tracks resources, allocates readers and resources across multiple
     * applications,and supports transaction primitives for accessing services available on a given card.*/
     int EstablishRSContext();
-
-    /* Selecting the reader number (index in the table)*/
-    int SelectReaderNumber(int argc, char * readerNumber);
 
     /* Connecting to the card in the given reader*/
     int ConnectCard(int reader_nb);

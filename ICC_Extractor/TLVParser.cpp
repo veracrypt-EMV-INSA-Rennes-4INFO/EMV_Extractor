@@ -1,15 +1,13 @@
-//
-// Created by bshp on 1/20/23.
-//
 #include "TLVParser.h"
 #include <string.h>
 
+using namespace std;
 
 /* TLV node structure creation */
-struct TLVNode* TLVParser::TLV_CreateNode()
+shared_ptr<TLVNode> TLVParser::TLV_CreateNode()
 {
-    struct TLVNode* node = (struct TLVNode *)malloc(sizeof(*node));
-    memset(node,0,sizeof(*node));
+    shared_ptr<TLVNode> node= make_shared<TLVNode>();//TLVNode* node = new TLVNode;
+    memset(node.get(),0,sizeof(*node));
     return node;
 }
 
@@ -26,19 +24,19 @@ int TLVParser::CheckBit(unsigned char value, int bit){
         }
     }
     else{
-        printf("FILE: %s LINE: %d Paramètre de fonction incorrect! bit=[%d]\n", __FILE__, __LINE__, bit);
+        throw TLVException("FILE:"+string(__FILE__)+"LINE: "+to_string(__LINE__)+" fonction parameter incorrect! bit=["+to_string(bit));
         return(-1);
     }
 }
 
 /* Parsing one TLV node */
-struct TLVNode* TLVParser::TLV_Parse_One(unsigned char* buf,int size){
+shared_ptr<TLVNode> TLVParser::TLV_Parse_One(unsigned char* buf,int size){
     int index = 0;
     int i;
     uint16_t tag1,tag2,tagsize;
     uint16_t len,lensize;
     unsigned char* value;
-    struct TLVNode* node = TLV_CreateNode();
+    shared_ptr<TLVNode> node = TLV_CreateNode();
 
     tag1 = tag2 = 0;
     tagsize = 1;
@@ -78,8 +76,8 @@ struct TLVNode* TLVParser::TLV_Parse_One(unsigned char* buf,int size){
     node->LengthSize = lensize;
 
     //V zone
-    value = (unsigned char *)malloc(len);
-    memcpy(value,buf+index,len);
+    value = new unsigned char[len]; //(unsigned char *)malloc(len);
+    std::copy(buf+index,buf+index+len,value);//memcpy(value,buf+index,len);
     node->Value = value;
     index += len;
 
@@ -90,14 +88,14 @@ struct TLVNode* TLVParser::TLV_Parse_One(unsigned char* buf,int size){
         node->MoreFlag = 0;
     }
     else{
-        printf("Parse Error! index=%d size=%d\n",index,size);
+        throw TLVException("Parse Error! index="+to_string(index)+"size="+to_string(size));
     }
 
     return node;
 }
 
 /* Parsing all sub-nodes (in width not in depth) of a given parent node */
-int TLVParser::TLV_Parse_SubNodes(struct TLVNode* parent){
+int TLVParser::TLV_Parse_SubNodes(shared_ptr<TLVNode> parent){
     int sublen = 0;
     int i;
 
@@ -112,7 +110,7 @@ int TLVParser::TLV_Parse_SubNodes(struct TLVNode* parent){
 
     if(sublen < parent->Length)
     {
-        struct TLVNode* subnode = TLV_Parse_One(parent->Value+sublen,parent->Length-sublen);
+        shared_ptr<TLVNode> subnode = TLV_Parse_One(parent->Value+sublen,parent->Length-sublen);
         parent->Sub[parent->SubCount++] = subnode;
         return subnode->MoreFlag;
     }
@@ -123,7 +121,7 @@ int TLVParser::TLV_Parse_SubNodes(struct TLVNode* parent){
 }
 
 /* Recursive function to parse all nodes starting from a root parent node */
-void TLVParser::TLV_Parse_Sub(struct TLVNode* parent)
+void TLVParser::TLV_Parse_Sub(shared_ptr<TLVNode> parent)
 {
     int i;
     if(parent->SubFlag != 0)
@@ -143,18 +141,18 @@ void TLVParser::TLV_Parse_Sub(struct TLVNode* parent)
 }
 
 /* Parsing TLV from a buffer and constructing TLV structure */
-struct TLVNode* TLVParser::TLV_Parse(unsigned char* buf,int size)
+shared_ptr<TLVNode> TLVParser::TLV_Parse(unsigned char* buf,int size)
 {
-    struct TLVNode* node = TLV_Parse_One(buf,size);
+    shared_ptr<TLVNode> node = TLV_Parse_One(buf,size);
     TLV_Parse_Sub(node);
 
     return node;
 }
 
 /* Finding a TLV node with a particular tag */
-struct TLVNode* TLVParser::TLV_Find(struct TLVNode* node,uint16_t tag){
+shared_ptr<TLVNode> TLVParser::TLV_Find(shared_ptr<TLVNode> node,uint16_t tag){
     int i;
-    struct TLVNode* tmpnode;
+    shared_ptr<TLVNode> tmpnode;
     if(node->Tag == tag)
     {
         return node;
@@ -176,6 +174,6 @@ struct TLVNode* TLVParser::TLV_Find(struct TLVNode* node,uint16_t tag){
         }
     }
 
-    return NULL;
+    return nullptr;
 }
 

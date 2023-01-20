@@ -26,7 +26,6 @@ IccDataExtractor::~IccDataExtractor(){
 
     /*Release memory allocated to the card readers pointers*/
     delete [] readers;
-
 }
 
 /* Establishing the resource manager context (the scope) within which database operations are performed.
@@ -39,7 +38,8 @@ int IccDataExtractor::EstablishRSContext(){
         LONG returnValue = SCardEstablishContext(SCARD_SCOPE_SYSTEM, NULL, NULL, &hContext);
 
         /* Check if the establishment of the context was unsuccessful  */
-        if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+        if (returnValue != SCARD_S_SUCCESS)
+            throw PCSCException(returnValue);
 
         return EXIT_SUCCESS;
     //}
@@ -62,7 +62,8 @@ int IccDataExtractor::GetReaders(){
     LONG returnValue = SCardListReaders(hContext, NULL, (LPSTR)&mszReaders, &dwReaders);
 
     /* Check if the listing of the connected readers was unsuccessful  */
-    if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+    if (returnValue != SCARD_S_SUCCESS)
+        throw PCSCException(returnValue);
 
     ReaderPtr = mszReaders;
 
@@ -74,13 +75,15 @@ int IccDataExtractor::GetReaders(){
     }
 
     /* Check if there is at least one reader connected */
-    if (nbReaders == 0) throw ICCExtractionException("No reader found");
+    if (nbReaders == 0)
+        throw ICCExtractionException("No reader found");
 
     /* Allocating the readers table with to contain nbReaders readers*/
     readers = new char * [nbReaders];
 
     /* Check if the reader table can be allocated */
-    if (nullptr == readers) throw ICCExtractionException("Not enough memory to allocate the reader table\n");
+    if (nullptr == readers)
+        throw ICCExtractionException("Not enough memory to allocate the reader table\n");
 
     /* Filling the readers table */
     nbReaders = 0;
@@ -99,14 +102,16 @@ int IccDataExtractor::GetReaders(){
 int IccDataExtractor::ConnectCard(int reader_nb){
 
     /* Check if the given reader slot number is possible */
-    if (reader_nb < 0 || reader_nb >= nbReaders) throw ICCExtractionException("Wrong reader index: "+reader_nb);
+    if (reader_nb < 0 || reader_nb >= nbReaders)
+        throw ICCExtractionException("Wrong reader index: "+to_string(reader_nb));
 
     dwActiveProtocol = -1;
 
     LONG returnValue = SCardConnect(hContext, readers[reader_nb], SCARD_SHARE_SHARED, SCARD_PROTOCOL_T0 | SCARD_PROTOCOL_T1, &hCard, &dwActiveProtocol);
 
     /* Check is the card connection was unsuccessful */
-    if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+    if (returnValue != SCARD_S_SUCCESS)
+        throw PCSCException(returnValue);
 
     return EXIT_SUCCESS;
 }
@@ -136,13 +141,16 @@ bool IccDataExtractor::TestingCardType(const int SELECT_TYPE_NUMBER){
     LONG returnValue = SCardTransmit(hCard, &ioRequest, SELECTED_TYPE, dwSendLength, NULL, pbRecvBuffer, &dwRecvLength);
 
     /* Check if the transmission was unsuccessful  */
-    if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+    if (returnValue != SCARD_S_SUCCESS)
+        throw PCSCException(returnValue);
 
     /* It received a response. Check if it didn't get a recognisable response */
-    if (dwRecvLength < 2) throw ICCExtractionException("Testing card type response not recognisable");
+    if (dwRecvLength < 2)
+        throw ICCExtractionException("Testing card type response not recognisable");
 
     /* Check if the command successfully executed (the card is the type passed in the parameter) */
-    if (pbRecvBuffer[0] == 0x61) return true;
+    if (pbRecvBuffer[0] == 0x61)
+        return true;
 
     return false;
 }
@@ -155,9 +163,9 @@ vector<byte> IccDataExtractor::GetCerts(){
     bool iccFound= false;
     bool issuerFound= false;
 
-    struct TLVNode* node;
-    struct TLVNode* ICC_Public_Key_Certificate;
-    struct TLVNode* Issuer_PK_Certificate;
+    shared_ptr<TLVNode> node;
+    shared_ptr<TLVNode> ICC_Public_Key_Certificate;
+    shared_ptr<TLVNode> Issuer_PK_Certificate;
 
     BYTE pbRecvBuffer[64];      /* Buffer to receive the card response */
     BYTE pbRecvBufferFat[256];  /* Bigger buffer to receive the card response */
@@ -187,10 +195,12 @@ vector<byte> IccDataExtractor::GetCerts(){
             returnValue = SCardTransmit(hCard, &ioRequest, SELECT_APDU_FILE, dwSendLength,NULL, pbRecvBuffer, &dwRecvLength);
 
             /* Check if the transmission was unsuccessful  */
-            if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+            if (returnValue != SCARD_S_SUCCESS)
+                throw PCSCException(returnValue);
 
             /* There is no data in the folder */
-            if (pbRecvBuffer[0] != 0x6C) continue;
+            if (pbRecvBuffer[0] != 0x6C)
+                continue;
 
             /* It set the proper expected length of the data in the APDU */
             SELECT_APDU_FILE[4] = pbRecvBuffer[1];
@@ -202,10 +212,12 @@ vector<byte> IccDataExtractor::GetCerts(){
                                         NULL, pbRecvBufferFat, &dwRecvLength);
 
             /* Check if the transmission was unsuccessful */
-            if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+            if (returnValue != SCARD_S_SUCCESS)
+                throw PCSCException(returnValue);
 
             /* It received a response. Check if it didn't get a recognisable response */
-            if (dwRecvLength < 2) throw ICCExtractionException("Getting folder data response not recognisable");
+            if (dwRecvLength < 2)
+                throw ICCExtractionException("Getting folder data response not recognisable");
 
             /* Parsing the TLV */
             node = TLVParser::TLV_Parse(pbRecvBufferFat,sizeof(pbRecvBufferFat));
@@ -260,10 +272,12 @@ vector<byte> IccDataExtractor::GetCPCL(){
                                 NULL, pbRecvBuffer, &dwRecvLength);
 
     /* Check if the transmission was unsuccessful  */
-    if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+    if (returnValue != SCARD_S_SUCCESS)
+        throw PCSCException(returnValue);
 
     /* Not the correct APDU response code */
-    if (pbRecvBuffer[0] != 0x6C) throw APDUException(&pbRecvBuffer[0]);
+    if (pbRecvBuffer[0] != 0x6C)
+        throw APDUException(&pbRecvBuffer[0]);
 
     /* It set the proper expected length of the data in the APDU */
     SELECT_APDU_CPCL[4] = pbRecvBuffer[1];
@@ -275,10 +289,12 @@ vector<byte> IccDataExtractor::GetCPCL(){
                                 NULL, pbRecvBufferFat, &dwRecvLength);
 
     /* Check if the transmission was unsuccessful  */
-    if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+    if (returnValue != SCARD_S_SUCCESS)
+        throw PCSCException(returnValue);
 
     /* It received a response. Check if it didn't get a recognisable response */
-    if (dwRecvLength < 2) throw ICCExtractionException("Getting CPCl data response not recognisable");
+    if (dwRecvLength < 2)
+        throw ICCExtractionException("Getting CPCl data response not recognisable");
 
     /* We add CPCL data and crop the TAG and the data length at the start and the trailer at the end */
     for (int i = 3; i < dwRecvLength-2; i++) {
@@ -328,14 +344,14 @@ vector<byte> IccDataExtractor::GettingAllCerts(int readerNumber){
     DisconnectCard();
 
     /* Check if the card is not an EMV one */
-    if(!isEMV) {
+    if(!isEMV)
         throw ICCExtractionException("Unknown card type");
-    }
+
 
     /* Not enough data to act as a keyfile (CPLC data is not enough) */
-    if (hasCerts==0) {
+    if (hasCerts==0)
         throw ICCExtractionException("No Certs on the card");
-    }
+
 
     try{
         ConnectCard(readerNumber);
@@ -368,8 +384,8 @@ vector<byte> IccDataExtractor::GetPAN() {
     vector<byte> PANres;
 
     bool PANFound= false;
-    struct TLVNode* node;
-    struct TLVNode* PAN;
+    shared_ptr<TLVNode> node;
+    shared_ptr<TLVNode> PAN;
 
     BYTE pbRecvBuffer[64];      /* Buffer to receive the card response */
     BYTE pbRecvBufferFat[256];  /* Bigger buffer to receive the card response */
@@ -399,10 +415,12 @@ vector<byte> IccDataExtractor::GetPAN() {
             returnValue = SCardTransmit(hCard, &ioRequest, SELECT_APDU_FILE, dwSendLength,NULL, pbRecvBuffer, &dwRecvLength);
 
             /* Check if the transmission was unsuccessful  */
-            if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+            if (returnValue != SCARD_S_SUCCESS)
+                throw PCSCException(returnValue);
 
             /* There is no data in the folder */
-            if (pbRecvBuffer[0] != 0x6C) continue;
+            if (pbRecvBuffer[0] != 0x6C)
+                continue;
 
             /* It set the proper expected length of the data in the APDU */
             SELECT_APDU_FILE[4] = pbRecvBuffer[1];
@@ -414,10 +432,12 @@ vector<byte> IccDataExtractor::GetPAN() {
                                         NULL, pbRecvBufferFat, &dwRecvLength);
 
             /* Check if the transmission was unsuccessful */
-            if (returnValue != SCARD_S_SUCCESS) throw PCSCException(returnValue);
+            if (returnValue != SCARD_S_SUCCESS)
+                throw PCSCException(returnValue);
 
             /* It received a response. Check if it didn't get a recognisable response */
-            if (dwRecvLength < 2) throw ICCExtractionException("Getting folder data response not recognisable");
+            if (dwRecvLength < 2)
+                throw ICCExtractionException("Getting folder data response not recognisable");
 
             /* Parsing the TLV */
             node = TLVParser::TLV_Parse(pbRecvBufferFat,sizeof(pbRecvBufferFat));
