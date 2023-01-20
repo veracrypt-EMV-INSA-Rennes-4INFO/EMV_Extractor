@@ -49,7 +49,7 @@ private:
 
     SCARDHANDLE hCard;          /* A handle that identifies the connection to the smart card in the designated reader*/
 
-    char ** readers;  /* Card reader list */
+    std::vector<char *> readers;  /* Card reader list */
 
     int nbReaders;              /* Number of connected (available) readers */
 

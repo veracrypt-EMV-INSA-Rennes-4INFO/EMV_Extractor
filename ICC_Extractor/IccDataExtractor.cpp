@@ -24,8 +24,6 @@ IccDataExtractor::~IccDataExtractor(){
     * designator*/
     if (mszReaders) SCardFreeMemory(hContext, mszReaders);
 
-    /*Release memory allocated to the card readers pointers*/
-    delete [] readers;
 }
 
 /* Establishing the resource manager context (the scope) within which database operations are performed.
@@ -50,9 +48,6 @@ int IccDataExtractor::GetReaders(){
 
     EstablishRSContext();
 
-    LPSTR ReaderPtr= nullptr;
-    nbReaders = 0;
-
     /* Length of the mszReaders buffer in characters. If the buffer length is specified as
     * SCARD_AUTOALLOCATE, then mszReaders is converted to a pointer to a byte pointer, and
     * receives the address of a block of memory containing the multi-string structure */
@@ -65,11 +60,14 @@ int IccDataExtractor::GetReaders(){
     if (returnValue != SCARD_S_SUCCESS)
         throw PCSCException(returnValue);
 
-    ReaderPtr = mszReaders;
+
+    nbReaders = 0;
+    LPSTR ReaderPtr = mszReaders;
 
     /* Getting the total number of readers */
     while (*ReaderPtr != '\0')
     {
+        readers.push_back(ReaderPtr);
         ReaderPtr += strlen(ReaderPtr) + 1;
         nbReaders++;
     }
@@ -77,23 +75,6 @@ int IccDataExtractor::GetReaders(){
     /* Check if there is at least one reader connected */
     if (nbReaders == 0)
         throw ICCExtractionException("No reader found");
-
-    /* Allocating the readers table with to contain nbReaders readers*/
-    readers = new char * [nbReaders];
-
-    /* Check if the reader table can be allocated */
-    if (nullptr == readers)
-        throw ICCExtractionException("Not enough memory to allocate the reader table\n");
-
-    /* Filling the readers table */
-    nbReaders = 0;
-    ReaderPtr = mszReaders;
-    while (*ReaderPtr != '\0')
-    {
-        readers[nbReaders] = ReaderPtr;
-        ReaderPtr += strlen(ReaderPtr) + 1;
-        nbReaders++;
-    }
 
     return nbReaders;
 }
