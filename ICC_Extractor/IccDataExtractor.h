@@ -13,12 +13,11 @@
 #include <vector>
 #include <iomanip>
 
+#include "TLVParser.h"
 
 #ifdef  __linux__
     #include <unistd.h>
 #endif
-
-#include "Tlv.h"
 
 #ifdef _WIN32
 #include <windows.h>
@@ -96,7 +95,7 @@ private:
     * (!NEED TO TEST CARD TYPE TO SELECT APPLICATION FIRST!)*/
     std::vector<std::byte> GetPAN();
 
-    /* Helper function to make a string from plain arrays and various standard containers of bytes*/
+    /* Helper function to make a string from plain arrays and various standard containers of bytes */
     template<typename TInputIter>
     std::string make_hex_string(TInputIter first, TInputIter last, bool use_uppercase = true, bool insert_spaces = false);
 

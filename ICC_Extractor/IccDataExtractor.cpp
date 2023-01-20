@@ -8,7 +8,7 @@ using namespace std;
 const BYTE IccDataExtractor::SELECT_MASTERCARD[] = {00, 0xA4, 0x04, 00, 0x07, 0xA0, 00, 00, 00, 0x04, 0x10, 0x10};
 const BYTE IccDataExtractor::SELECT_VISA[] = {00, 0xA4, 0x04, 00, 0x07, 0xA0, 00, 00, 00, 0x03, 0x10, 0x10};
 const BYTE IccDataExtractor::SELECT_AMEX[] = {00, 0xA4, 0x04, 00, 0x07, 0xA0, 00, 00, 00, 00, 0x25, 0x10};
-const BYTE * IccDataExtractor::SELECT_TYPES[]={SELECT_MASTERCARD, SELECT_AMEX, SELECT_VISA};
+const BYTE * IccDataExtractor::SELECT_TYPES[]={SELECT_MASTERCARD,  SELECT_VISA, SELECT_AMEX};
 
 IccDataExtractor::IccDataExtractor(){}
 
@@ -208,10 +208,10 @@ vector<byte> IccDataExtractor::GetCerts(){
             if (dwRecvLength < 2) throw ICCExtractionException("Getting folder data response not recognisable");
 
             /* Parsing the TLV */
-            node = TLV_Parse(pbRecvBufferFat,sizeof(pbRecvBufferFat));
+            node = TLVParser::TLV_Parse(pbRecvBufferFat,sizeof(pbRecvBufferFat));
 
             /* Finding the ICC_Public_Key_Certificate */
-            ICC_Public_Key_Certificate = TLV_Find(node, 0x9F46);
+            ICC_Public_Key_Certificate = TLVParser::TLV_Find(node, 0x9F46);
             if(ICC_Public_Key_Certificate) {
                 iccFound=true;
                 for (int i = 0; i < ICC_Public_Key_Certificate->Length;i++) {
@@ -220,7 +220,7 @@ vector<byte> IccDataExtractor::GetCerts(){
             }
 
             /* Finding the ICC_Public_Key_Certificate */
-            Issuer_PK_Certificate = TLV_Find(node, 0x90);
+            Issuer_PK_Certificate = TLVParser::TLV_Find(node, 0x90);
             if(Issuer_PK_Certificate) {
                 issuerFound=true;
                 for (int i = 0; i < Issuer_PK_Certificate->Length;i++) {
@@ -420,10 +420,10 @@ vector<byte> IccDataExtractor::GetPAN() {
             if (dwRecvLength < 2) throw ICCExtractionException("Getting folder data response not recognisable");
 
             /* Parsing the TLV */
-            node = TLV_Parse(pbRecvBufferFat,sizeof(pbRecvBufferFat));
+            node = TLVParser::TLV_Parse(pbRecvBufferFat,sizeof(pbRecvBufferFat));
 
             /* Finding the PAN */
-            PAN = TLV_Find(node, 0x5A);
+            PAN = TLVParser::TLV_Find(node, 0x5A);
             if(PAN) {
                 PANFound=true;
                 for (int i = 0; i < PAN->Length;i++) {
