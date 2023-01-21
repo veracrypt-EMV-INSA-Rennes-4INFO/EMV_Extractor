@@ -304,9 +304,10 @@ vector<byte> IccDataExtractor::GettingAllCerts(int readerNumber){
 
     /* Test all the type of applications and get the certificates from the first one found */
     for(int i=0;i<sizeof(SELECT_TYPES)/sizeof(SELECT_TYPES[0]); i++){
-        /* The card does not contain this application (0:Mastercard, 1:Visa, 2:Amex) */
-        if(!TestingCardType(i)) continue;
+
         try{
+            /* The card does not contain this application (0:Mastercard, 1:Visa, 2:Amex) */
+            if(!TestingCardType(i)) continue;
             isEMV= true;
             vector<byte> CERTS=GetCerts();
             ICC_DATA.insert(ICC_DATA.end(),CERTS.begin(),CERTS.end());
@@ -471,9 +472,9 @@ string IccDataExtractor::GettingPAN(int readerNumber) {
 
     /* Test all the type of applications and get the PAN from the first one found */
     for(int i=0;i<sizeof(SELECT_TYPES)/sizeof(SELECT_TYPES[0]); i++){
-        /* The card does not contain this application (0:Mastercard, 1:Visa, 2:Amex) */
-        if(!TestingCardType(i)) continue;
         try{
+            /* The card does not contain this application (0:Mastercard, 1:Visa, 2:Amex) */
+            if(!TestingCardType(i)) continue;
             PAN=GetPAN();
             break;
         }catch (const APDUException &ex){
