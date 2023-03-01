@@ -49,11 +49,11 @@ private:
 
     SCARDHANDLE hCard;          /* A handle that identifies the connection to the smart card in the designated reader*/
 
-    std::vector<char *> readers;  /* Card reader list */
+    std::vector<LPCTSTR> readers;  /* Card reader list */
 
     int nbReaders;              /* Number of connected (available) readers */
 
-    LPSTR mszReaders;           /* Names of the reader groups defined to the system, as a multi-string. Use a NULL value to
+    LPCTSTR mszReaders;           /* Names of the reader groups defined to the system, as a multi-string. Use a NULL value to
                                  * list all readers in the system */
 
     DWORD dwActiveProtocol;       /* A flag that indicates the established active protocol.
@@ -78,14 +78,14 @@ private:
 
     /* Getting the ICC Public Key Certificates and the Issuer Public Key Certificates by parsing the application
     * (!NEED TO TEST CARD TYPE TO SELECT APPLICATION FIRST!)*/
-    std::vector<std::byte> GetCerts();
+    std::vector<char> GetCerts();
 
     /* Getting CPCL data from the card and put it into a reference*/
-    std::vector<std::byte> GetCPCL();
+    std::vector<char> GetCPCL();
 
     /* Getting the PAN  by parsing the application
     * (!NEED TO TEST CARD TYPE TO SELECT APPLICATION FIRST!)*/
-    std::vector<std::byte> GetPAN();
+    std::vector<char> GetPAN();
 
     /* Helper function to make a string from plain arrays and various standard containers of bytes */
     template<typename TInputIter>
@@ -102,7 +102,7 @@ public:
 
     /* Getting an ICC Public Key Certificates, an Issuer Public Key Certificates and the CPCL data
      * from the card designated by the reader number. Appending them into a byte vector */
-    std::vector<std::byte> GettingAllCerts(int readerNumber);
+    std::vector<char> GettingAllCerts(int readerNumber);
 
     /* Getting the PAN from the card designated by the reader number */
     std::string GettingPAN(int readerNumber);

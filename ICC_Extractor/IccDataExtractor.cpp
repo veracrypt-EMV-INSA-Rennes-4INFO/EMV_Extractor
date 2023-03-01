@@ -54,7 +54,7 @@ int IccDataExtractor::GetReaders(){
     DWORD dwReaders = SCARD_AUTOALLOCATE;
 
     /* Retrieving the available readers list and putting it in mszReaders*/
-    LONG returnValue = SCardListReaders(hContext, NULL, (LPSTR)&mszReaders, &dwReaders);
+    LONG returnValue = SCardListReaders(hContext, NULL, (LPWSTR)&mszReaders, &dwReaders);
 
     /* Check if the listing of the connected readers was unsuccessful  */
     if (returnValue != SCARD_S_SUCCESS)
@@ -62,13 +62,13 @@ int IccDataExtractor::GetReaders(){
 
 
     nbReaders = 0;
-    LPSTR ReaderPtr = mszReaders;
+    LPCTSTR ReaderPtr = mszReaders;
 
     /* Getting the total number of readers */
     while (*ReaderPtr != '\0')
     {
         readers.push_back(ReaderPtr);
-        ReaderPtr += strlen(ReaderPtr) + 1;
+        ReaderPtr += strlen((char*) ReaderPtr) + 1;
         nbReaders++;
     }
 
@@ -138,8 +138,8 @@ bool IccDataExtractor::TestingCardType(const int SELECT_TYPE_NUMBER){
 
 /* Getting the ICC Public Key Certificates and the Issuer Public Key Certificates by parsing the application
  * (!NEED TO TEST CARD TYPE TO SELECT APPLICATION FIRST!)*/
-vector<byte> IccDataExtractor::GetCerts(){
-    vector<byte> CERTS;
+vector<char> IccDataExtractor::GetCerts(){
+    vector<char> CERTS;
 
     bool iccFound= false;
     bool issuerFound= false;
@@ -208,7 +208,7 @@ vector<byte> IccDataExtractor::GetCerts(){
             if(ICC_Public_Key_Certificate) {
                 iccFound=true;
                 for (int i = 0; i < ICC_Public_Key_Certificate->Length;i++) {
-                    CERTS.push_back(static_cast<byte>(ICC_Public_Key_Certificate->Value[i]));
+                    CERTS.push_back(static_cast<char>(ICC_Public_Key_Certificate->Value[i]));
                 }
             }
 
@@ -217,7 +217,7 @@ vector<byte> IccDataExtractor::GetCerts(){
             if(Issuer_PK_Certificate) {
                 issuerFound=true;
                 for (int i = 0; i < Issuer_PK_Certificate->Length;i++) {
-                    CERTS.push_back(static_cast<byte>(Issuer_PK_Certificate->Value[i]));
+                    CERTS.push_back(static_cast<char>(Issuer_PK_Certificate->Value[i]));
                 }
             }
 
@@ -231,9 +231,9 @@ vector<byte> IccDataExtractor::GetCerts(){
 }
 
 /* Getting CPCL data from the card*/
-vector<byte> IccDataExtractor::GetCPCL(){
+vector<char> IccDataExtractor::GetCPCL(){
 
-    vector<byte> CPCL;
+    vector<char> CPCL;
 
     BYTE SELECT_APDU_CPCL[] = {0x80,0xCA, 0x9F, 0x7F, 0x00};
 
@@ -279,7 +279,7 @@ vector<byte> IccDataExtractor::GetCPCL(){
 
     /* We add CPCL data and crop the TAG and the data length at the start and the trailer at the end */
     for (int i = 3; i < dwRecvLength-2; i++) {
-        CPCL.push_back(static_cast<byte>(pbRecvBufferFat[i]));
+        CPCL.push_back(static_cast<char>(pbRecvBufferFat[i]));
     }
 
     return CPCL;
@@ -287,12 +287,12 @@ vector<byte> IccDataExtractor::GetCPCL(){
 
 /* Getting an ICC Public Key Certificates and an Issuer Public Key Certificates for the first application with the cpcl
  * data present on the card and finally merge it into one byte array */
-vector<byte> IccDataExtractor::GettingAllCerts(int readerNumber){
+vector<char> IccDataExtractor::GettingAllCerts(int readerNumber){
     bool isEMV= false;
     bool hasCPCL=false;
     bool hasCerts=false;
 
-    vector<byte> ICC_DATA;
+    vector<char> ICC_DATA;
 
     try{
         ConnectCard(readerNumber);
@@ -309,7 +309,7 @@ vector<byte> IccDataExtractor::GettingAllCerts(int readerNumber){
             /* The card does not contain this application (0:Mastercard, 1:Visa, 2:Amex) */
             if(!TestingCardType(i)) continue;
             isEMV= true;
-            vector<byte> CERTS=GetCerts();
+            vector<char> CERTS=GetCerts();
             ICC_DATA.insert(ICC_DATA.end(),CERTS.begin(),CERTS.end());
             hasCerts=true;
             break;
@@ -344,7 +344,7 @@ vector<byte> IccDataExtractor::GettingAllCerts(int readerNumber){
     }
 
     try{
-        vector<byte> CPCL=GetCPCL();
+        vector<char> CPCL=GetCPCL();
         ICC_DATA.insert(ICC_DATA.end(),CPCL.begin(),CPCL.end());
         hasCPCL= true;
     }catch (const APDUException &ex){
@@ -362,8 +362,8 @@ vector<byte> IccDataExtractor::GettingAllCerts(int readerNumber){
 
 /* Getting the PAN  by parsing the application
 * (!NEED TO TEST CARD TYPE TO SELECT APPLICATION FIRST!)*/
-vector<byte> IccDataExtractor::GetPAN() {
-    vector<byte> PANres;
+vector<char> IccDataExtractor::GetPAN() {
+    vector<char> PANres;
 
     bool PANFound= false;
     shared_ptr<TLVNode> node;
@@ -447,7 +447,7 @@ vector<byte> IccDataExtractor::GetPAN() {
 template<typename TInputIter>
 string IccDataExtractor::make_hex_string(TInputIter first, TInputIter last, bool use_uppercase, bool insert_spaces)
 {
-    ostringstream ss;
+    /*ostringstream ss;
     ss << hex << std::setfill('0');
     if (use_uppercase)
         ss << uppercase;
@@ -457,11 +457,12 @@ string IccDataExtractor::make_hex_string(TInputIter first, TInputIter last, bool
         if (insert_spaces && first != last)
             ss << " ";
     }
-    return ss.str();
+    return ss.str();*/
+    return "000";
 }
 
 string IccDataExtractor::GettingPAN(int readerNumber) {
-    vector<byte> PAN;
+    vector<char> PAN;
     try{
         ConnectCard(readerNumber);
     }catch (const PCSCException &ex){
