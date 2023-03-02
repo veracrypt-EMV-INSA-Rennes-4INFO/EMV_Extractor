@@ -54,7 +54,7 @@ int IccDataExtractor::GetReaders(){
     DWORD dwReaders = SCARD_AUTOALLOCATE;
 
     /* Retrieving the available readers list and putting it in mszReaders*/
-    LONG returnValue = SCardListReaders(hContext, NULL, (LPWSTR)&mszReaders, &dwReaders);
+    LONG returnValue = SCardListReaders(hContext, NULL, (LPTSTR)&mszReaders, &dwReaders);
 
     /* Check if the listing of the connected readers was unsuccessful  */
     if (returnValue != SCARD_S_SUCCESS)
@@ -429,7 +429,7 @@ vector<char> IccDataExtractor::GetPAN() {
             if(PAN) {
                 PANFound=true;
                 for (int i = 0; i < PAN->Length;i++) {
-                    PANres.push_back(static_cast<byte>(PAN->Value[i]));
+                    PANres.push_back(static_cast<char>(PAN->Value[i]));
                 }
             }
 

@@ -10,7 +10,7 @@ int main(int argc, char* argv[])
     cout << "Number of connected readers: " << ex.GetReaders() << endl;
 
 
-    int reader_nb = 0; // it's hardcoded for now but it should be a parameter with Veracrypt
+    int reader_nb = 1; // it's hardcoded for now but it should be a parameter with Veracrypt
     cout << "GettingPAN\n";
     try {
         string pan = ex.GettingPAN(reader_nb);
