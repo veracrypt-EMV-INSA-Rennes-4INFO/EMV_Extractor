@@ -9,8 +9,32 @@ int main(int argc, char* argv[])
     cout << "GetReaders\n";
     cout << "Number of connected readers: " << ex.GetReaders() << endl;
 
+    for (unsigned long int slotId = 0; slotId < 11; slotId++)
+    {
 
-    int reader_nb = 1; // it's hardcoded for now but it should be a parameter with Veracrypt
+        try {
+            cout << "PAN : " << ex.GettingPAN(slotId) << "\n";
+        }
+        catch (ICCExtractionException) {
+            cout << slotId << "Not EMV Type" << endl;
+            continue;
+        }
+
+        cout << "GettingAllCerts reader " << slotId << "\n";
+        try {
+            vector<char> res = ex.GettingAllCerts(slotId);
+            for (auto val : res) printf("%02X", val);
+            cout << "\n";
+            cout << "All the data has been extracted ! \n";
+            cout << "EMV Part DONE!!!\n";
+        }
+        catch (const ICCExtractionException& ex) {
+            cout << "Error when getting Data: " << ex.ErrorMessage();
+        }
+    }
+
+
+    /*int reader_nb = 0; // it's hardcoded for now but it should be a parameter with Veracrypt
     cout << "GettingPAN\n";
     try {
         string pan = ex.GettingPAN(reader_nb);
@@ -30,6 +54,6 @@ int main(int argc, char* argv[])
     }
     catch (const ICCExtractionException& ex) {
         cout << "Error when getting Data: " << ex.ErrorMessage();
-    }
+    }*/
 
 }

@@ -54,7 +54,7 @@ int IccDataExtractor::GetReaders(){
     DWORD dwReaders = SCARD_AUTOALLOCATE;
 
     /* Retrieving the available readers list and putting it in mszReaders*/
-    LONG returnValue = SCardListReaders(hContext, NULL, (LPTSTR)&mszReaders, &dwReaders);
+    LONG returnValue = SCardListReaders(hContext, SCARD_DEFAULT_READERS, (LPTSTR) &mszReaders, &dwReaders);
 
     /* Check if the listing of the connected readers was unsuccessful  */
     if (returnValue != SCARD_S_SUCCESS)
@@ -447,18 +447,19 @@ vector<char> IccDataExtractor::GetPAN() {
 template<typename TInputIter>
 string IccDataExtractor::make_hex_string(TInputIter first, TInputIter last, bool use_uppercase, bool insert_spaces)
 {
-    /*ostringstream ss;
+    stringstream ss;
     ss << hex << std::setfill('0');
-    if (use_uppercase)
+    if (use_uppercase) {
         ss << uppercase;
+    }
     while (first != last)
     {
         ss << setw(2) << static_cast<int>(*first++);
-        if (insert_spaces && first != last)
+        if (insert_spaces && first != last){
             ss << " ";
+        }
     }
-    return ss.str();*/
-    return "000";
+    return ss.str();
 }
 
 string IccDataExtractor::GettingPAN(int readerNumber) {

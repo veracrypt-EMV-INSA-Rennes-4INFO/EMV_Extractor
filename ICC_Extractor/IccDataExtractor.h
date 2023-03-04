@@ -14,6 +14,8 @@
 #include <iomanip>
 #include <memory>
 
+#include<sstream>
+
 #include "TLVParser.h"
 
 #ifdef  __linux__
@@ -53,7 +55,7 @@ private:
 
     int nbReaders;              /* Number of connected (available) readers */
 
-    LPCTSTR mszReaders;           /* Names of the reader groups defined to the system, as a multi-string. Use a NULL value to
+    LPTSTR mszReaders;           /* Names of the reader groups defined to the system, as a multi-string. Use a NULL value to
                                  * list all readers in the system */
 
     DWORD dwActiveProtocol;       /* A flag that indicates the established active protocol.
